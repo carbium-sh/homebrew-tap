@@ -1,0 +1,77 @@
+# Points the formula at the carbium CLI release npm calls latest (tag cli-vX.Y.Z on carbium-sh/carbium-js; npm's latest
+# moves only after a release passes carbium-js's asset and attestation checks) and commits it after the binary installs
+# and passes its test on each platform. GITHUB_TOKEN only: it reads public releases and writes to this repository
+# alone, in the last step.
+name: update
+on:
+  schedule:
+    - cron: '47 7 * * *'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to point at, for example 0.1.0 (empty = npm's latest carbium, when it is not the formula's)
+        required: false
+permissions: {}
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: v
+        shell: bash
+        env:
+          WANTED: ${{ inputs.version }}
+        run: |
+          v="${WANTED}"
+          if [[ -z "${v}" ]]; then
+            v="$(curl -fsSL --proto '=https' https://registry.npmjs.org/-/package/carbium/dist-tags | jq -re .latest)"
+            [[ "${v}" != "$(sed -n 's/^  version "\(.*\)"$/\1/p' Formula/carbium.rb)" ]] || v=""
+          fi
+          echo "version=${v}" >>"${GITHUB_OUTPUT}"
+  test:
+    needs: version
+    if: needs.version.outputs.version != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-26, macos-26-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      V: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: Homebrew/actions/setup-homebrew@ceec4e8419bb3c97ce96e9dda7738499ed5f869d # 2026.11.14.1
+      - run: scripts/bump.sh "${V}"
+      - run: brew audit --strict --online carbium-sh/tap/carbium
+      - run: brew install carbium-sh/tap/carbium
+      - run: brew test carbium-sh/tap/carbium
+  commit:
+    needs: [version, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      V: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: scripts/bump.sh "${V}"
+      - run: |
+          git add Formula/carbium.rb
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -m "carbium ${V}"
+          scripts/leak-check.sh HEAD
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main

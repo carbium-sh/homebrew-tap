@@ -1,0 +1,30 @@
+name: tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions: {}
+jobs:
+  formula:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-26, macos-26-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: Homebrew/actions/setup-homebrew@ceec4e8419bb3c97ce96e9dda7738499ed5f869d # 2026.11.14.1
+      - if: matrix.os == 'ubuntu-latest'
+        run: brew style Formula/carbium.rb scripts/bump.sh .github/workflows/*.yml
+      - run: brew audit --strict --online carbium-sh/tap/carbium
+      - run: brew install carbium-sh/tap/carbium
+      - run: brew test carbium-sh/tap/carbium
+      - run: carbium --version
+      - if: runner.os == 'macOS'
+        run: |
+          bin="$(brew --prefix carbium)/bin/carbium"
+          codesign -dv "${bin}"
+          if xattr -p com.apple.quarantine "${bin}" 2>/dev/null; then echo "carbium is quarantined"; exit 1; fi
