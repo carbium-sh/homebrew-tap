@@ -1,7 +1,7 @@
 class Carbium < Formula
   desc "Command-line tool for Carbium's Solana RPC, DAS, swap, DCA and token services"
   homepage "https://github.com/carbium-sh/carbium-js/tree/main/packages/cli#readme"
-  version "0.1.0"
+  version "0.1.1"
   license "MIT"
 
   livecheck do
@@ -12,23 +12,23 @@ class Carbium < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/carbium-sh/carbium-js/releases/download/cli-v0.1.0/carbium-darwin-arm64"
-      sha256 "29e98986be9e49c2f696056e8f095bb4035ec51215046fd8d62da279c326e3a5"
+      url "https://github.com/carbium-sh/carbium-js/releases/download/cli-v0.1.1/carbium-darwin-arm64"
+      sha256 "6d61a6776a0dc15087b7e16d6f3f47ffc3d76a95ff60cd2ce011721de5f1f369"
     end
     on_intel do
-      url "https://github.com/carbium-sh/carbium-js/releases/download/cli-v0.1.0/carbium-darwin-x64"
-      sha256 "4c807adb4b625ea19a18e8dbd6a12b0bdca123eba0005cc16f6a54ae2e681efb"
+      url "https://github.com/carbium-sh/carbium-js/releases/download/cli-v0.1.1/carbium-darwin-x64"
+      sha256 "5b50a9ca9f65d8a964d720758e5d2e7ed9c306812d7ebb4baa9b432578393799"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/carbium-sh/carbium-js/releases/download/cli-v0.1.0/carbium-linux-arm64"
-      sha256 "84f1b02dcfcd1880d1987f89562d7a812dfffb8fd404a9c7f48f23e1e0cc85d3"
+      url "https://github.com/carbium-sh/carbium-js/releases/download/cli-v0.1.1/carbium-linux-arm64"
+      sha256 "093ec1f4b99619c528e1fe2db0c42205b81f4ca48e392a09eeb39c580e15ee8e"
     end
     on_intel do
-      url "https://github.com/carbium-sh/carbium-js/releases/download/cli-v0.1.0/carbium-linux-x64"
-      sha256 "38e120df6b9a224d0056d055740d975cacc42dda447aad4f5a79acc20b1a96e8"
+      url "https://github.com/carbium-sh/carbium-js/releases/download/cli-v0.1.1/carbium-linux-x64"
+      sha256 "d2cef603efc5c8553db0d1db249a575a94f7a64496cde28acdf0855be8418b29"
     end
   end
 
